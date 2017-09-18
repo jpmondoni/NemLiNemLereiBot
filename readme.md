@@ -52,7 +52,6 @@ class Plugin():
         return {'subtitle': self.get_title(),
                 'date_published': self.get_date(),
                 'content': self.get_content()}
-´´´
-
+```
 ## Contribuições
 Sua ajuda será sempre bem-vinda, qualquer coisa só commitar ;)
