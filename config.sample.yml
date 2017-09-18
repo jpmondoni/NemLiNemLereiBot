@@ -1,0 +1,26 @@
+bot:
+  # Subreddits dos quais o bot deve buscar por novos posts.
+  subreddits: ['PQCTestes']
+
+summarizer:
+  # O idioma dos artigos, requerido pelo sumarizador.
+  language: 'portuguese'
+  # Número máximo de sentenças do resumo.
+  sentences_count: 10
+
+reddit:
+  # Credenciais para autenticar no Reddit
+  client_id: ''
+  client_secret: ''
+  username: ''
+  password: ''
+  user_agent: ''
+
+database:
+  # Credenciais para autenticar no banco de dados.
+  driver: 'mysql'
+  username: ''
+  password: ''
+  host: 'localhost'
+  port: '3306'
+  database: ''
