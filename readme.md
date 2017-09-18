@@ -6,6 +6,13 @@ NemLiNemLereiBot é um Reddit Bot inspirado no /u/autotldr que resume as notíci
 
 Linux:
 
+Instale a biblioteca libmysqlclient-dev (necessária para conexão com banco de dados MySQL).
+
+```sh
+sudo apt-get install libmysqlclient-dev
+```
+Instale as dependências:
+
 ```sh
 pip install -r requirements.txt
 ```
