@@ -45,7 +45,7 @@ class Plugin():
     
     """ get_article_metadata é um outro método obrigatório, este deverá retornar um dicionário contendo as chaves 'subtitle', 'date_published' e 'content'.
     Subtitle deverá conter o subtítulo da notícia, se houver.
-    Date_published deverá conter a data de publicação da notícia, se houver.
+    Date_published deverá conter a data de publicação da notícia (em objeto datetime),  se houver.
     Content deverá conter o conteúdo da notícia, por razões óbvias este é o único dado obrigatório."""
     def get_article_metadata(self, url):
         ...
