@@ -16,7 +16,7 @@ Instale as dependências:
 ```sh
 pip install -r requirements.txt
 ```
-Após instalar as dependências, baixa os Punkt Tokenizer Models (necessário para a biblioteca sumy).
+Após instalar as dependências, baixe os Punkt Tokenizer Models (necessário para a biblioteca sumy).
 ```sh
 python3 -c "import nltk; nltk.download('punkt')" 
 ```
@@ -26,7 +26,7 @@ python3 -c "import nltk; nltk.download('punkt')"
 Renomeie o arquivo config.sample.yml para config.yml e preencha com as credenciais.
 ## Uso
 
-O bot é dividido em três partes, watch, fetch and reply. 
+O bot é dividido em três partes, watch, fetch and reply. Os três executam em loop infinito.
 
 Watch - Procura por novos posts (submissões) em um subreddit.
 ```sh
