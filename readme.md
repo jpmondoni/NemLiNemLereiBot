@@ -16,6 +16,10 @@ Instale as dependências:
 ```sh
 pip install -r requirements.txt
 ```
+Após instalar as dependências, instale os Punkt Tokenizer Models (necessário para a biblioteca sumy).
+```sh
+python3 -c "import nltk; nltk.download('punkt')" 
+```
 
 ## Configuração
 
