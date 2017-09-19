@@ -8,7 +8,9 @@
 
 > {{ article.summary }}
 
+{% if article.archiveis_link %}
 ^(O site está fora do ar ou algum problema com paywall?) [^(Leia aqui.)]({{ article.archiveis_link }})
+{% endif %}
 
 ***
 

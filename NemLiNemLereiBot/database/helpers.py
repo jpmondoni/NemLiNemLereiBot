@@ -31,7 +31,7 @@ def article_exists(Session, submission_id):
     return query
 
 
-def add_article(Session, summary, submission_id, archiveis_link, subtitle=None, date_published=None):
+def add_article(Session, summary, submission_id, archiveis_link=None, subtitle=None, date_published=None):
     article = Article(subtitle=subtitle, summary=summary, date_published=date_published,
                       archiveis_link=archiveis_link, submission_id=submission_id)
     Session.add(article)

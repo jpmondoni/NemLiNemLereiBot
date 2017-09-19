@@ -69,13 +69,16 @@ class RedditBot:
                     article_metadata = plugin.get_article_metadata(
                         submission.url)
 
-                    archiveis_link = get_archiveis_url(submission.url)
+                    """A API do archive.is não responde quando feita a partir da Amazon AWS.
+                    Eu gostava dessa feature, que pena, comentei para resolver isso depois."""
+
+                    #archiveis_link = get_archiveis_url(submission.url)
 
                     article = {'submission_id': submission.id,
                                'subtitle': article_metadata['subtitle'],
                                'date_published': article_metadata['date_published'],
-                               'summary': summarize(article_metadata['content']),
-                               'archiveis_link': archiveis_link}
+                               'summary': summarize(article_metadata['content'])}
+                               #'archiveis_link': archiveis_link}
 
                     add_article(Session=self.database, **article)
                     update_submission_status(
