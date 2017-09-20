@@ -16,18 +16,16 @@ class RedditBot:
     def __init__(self):
         self.config = self.load_config()
 
-    def load_config(self,):
-        with open('config.yml', 'r') as file:
+    def load_config(self, config_file='config.yml'):
+        with open(config_file, 'r') as file:
             config = yaml.load(file)
         return config
 
     def setup_plugins(self):
-        plugin_manager = PluginManager()
-        self.plugin_manager = plugin_manager
+        self.plugin_manager = PluginManager()
 
     def setup_reddit(self):
-        reddit = Reddit(**self.config['reddit'])
-        self.reddit = reddit
+        self.reddit = Reddit(**self.config['reddit'])
 
     def setup_database(self):
         database = Database(**self.config['database'])
@@ -36,8 +34,7 @@ class RedditBot:
         self.database = database.session
 
     def setup_summarizer(self):
-        summarizer = Summarizer(**self.config['summarizer'])
-        self.summarizer = summarizer
+        self.summarizer = Summarizer(**self.config['summarizer'])
 
     def watch_subreddits(self):
         self.setup_plugins()
