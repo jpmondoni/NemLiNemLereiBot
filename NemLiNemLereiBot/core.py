@@ -4,7 +4,7 @@ import logging
 from praw import Reddit
 from .pluginmanager import PluginManager
 from .database import Database
-from .helpers import url_matches, get_archiveis_url, render_template
+from .helpers import url_matches_plugin, get_archiveis_url, render_template
 from .summarizer import Summarizer
 from .database.helpers import submission_exists, add_submission, update_submission_status,\
     get_submissions_by_status, article_exists, add_article
@@ -45,7 +45,7 @@ class RedditBot:
         subreddits = self.reddit.subreddit(subreddits_list)
         for submission in subreddits.stream.submissions():
             logging.info('Found new submission: {}'.format(submission.id))
-            if url_matches(self, submission.url)\
+            if url_matches_plugin(self.plugin_manager, submission.url)\
                and not submission_exists(self.database, submission.id):
                 logging.info('Submission url matches, saving to database: {}'.format(submission.id))
                 add_submission(self.database, submission.id, submission.url)
@@ -60,7 +60,7 @@ class RedditBot:
             submissions = get_submissions_by_status(self.database, 'TO_FETCH')
             for submission in submissions:
                 if not article_exists(self.database, submission.id):
-                    plugin_name = url_matches(self, submission.url)
+                    plugin_name = url_matches_plugin(self.plugin_manager, submission.url)
                     logging.info('Fetching article: {} | Plugin: {}'.format(submission.url, plugin_name))
                     plugin = self.plugin_manager.get_plugin(plugin_name)
                     article_metadata = plugin.get_article_metadata(
