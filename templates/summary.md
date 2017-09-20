@@ -1,11 +1,11 @@
-{% if article.subtitle %}
-**{{ article.subtitle|trim }}**  
-{% endif %}
-
 {% if article.date_published %}
-^Notícia ^publicada ^em ^{{ article.date_published.strftime('%d/%m/%Y') }}  
-{% endif %}
+^Notícia ^publicada ^em ^20/09/2017, ^segue ^o ^melhor ^resumo ^que ^eu ^pude ^fazer:
+{% endif %}  
 
+{% if article.subtitle %}
+>**{{ article.subtitle|trim }}**  
+
+{% endif %}
 > {{ article.summary }}
 
 {% if article.archiveis_link %}
@@ -14,4 +14,4 @@
 
 ***
 
-^[[desenvolvedor](https://#) ^| ^[código-fonte](https://#)]
+^[[desenvolvedor](https://www.reddit.com/u/CaioWzy) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot)]
