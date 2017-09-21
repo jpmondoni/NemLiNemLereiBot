@@ -3,8 +3,7 @@ from pluginbase import PluginBase
 
 class PluginManager():
     def __init__(self):
-        self.plugin_source = PluginBase(package='plugins')\
-                    .make_plugin_source(searchpath=['plugins'])
+        self.plugin_source = PluginBase(package='plugins').make_plugin_source(searchpath=['plugins'])
         self.loaded_plugins = {}
         self.load_plugins()
 

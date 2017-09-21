@@ -108,32 +108,35 @@ class RedditBot:
 
                     # Por algum motivo as linhas a seguir não me agradam, mas vou deixar
                     # para outro alguém ou eu em outra oportunidade refatorar melhor.
-
-                    plugin_name = url_matches_plugin(self._plugin_manager, submission.url)
-                    plugin = self._plugin_manager.get_plugin(plugin_name)
-
-                    logging.info('Fetching article for submission base36_id: {} with plugin: {}'.format(submission.base36_id, plugin_name))
-
-                    article_metadata = plugin.get_article_metadata(submission.url)
-
-                    # archiveis não responde na rede da Amazon AWS, provavelmente
-                    # precisarei usar algum proxy, mas deixo aqui caso funcione para mais
-                    # alguém
                     try:
-                        archiveis_link = get_archiveis_url(submission.url)
-                    except IndexError:
-                        logging.error('Tried to capture the page using archive.is API but didn\'t work.')
-                        archiveis_link = None
+                        plugin_name = url_matches_plugin(self._plugin_manager, submission.url)
+                        plugin = self._plugin_manager.get_plugin(plugin_name)
 
-                    article = {'submission_id': submission.id,
-                               'subtitle': article_metadata['subtitle'],
-                               'date_published': article_metadata['date_published'],
-                               'summary': self._summarizer(article_metadata['content']),
-                               'archiveis_link': archiveis_link}
+                        logging.info('Fetching article for submission base36_id: {} with plugin: {}'.format(submission.base36_id, plugin_name))
 
-                    logging.info('Saving article metadata to database.')
-                    add_article(Session=self._database, **article)
-                    update_submission_status(self._database, submission.base36_id, 'TO_REPLY')
+                        article_metadata = plugin.get_article_metadata(submission.url)
+
+                        # archiveis não responde na rede da Amazon AWS, provavelmente
+                        # precisarei usar algum proxy, mas deixo aqui caso funcione para mais
+                        # alguém
+                        try:
+                            archiveis_link = get_archiveis_url(submission.url)
+                        except IndexError:
+                            logging.error('Tried to capture the page using archive.is API but didn\'t work.')
+                            archiveis_link = None
+
+                        article = {'submission_id': submission.id,
+                                'subtitle': article_metadata['subtitle'],
+                                'date_published': article_metadata['date_published'],
+                                'summary': self._summarizer(article_metadata['content']),
+                                'archiveis_link': archiveis_link}
+
+                        logging.info('Saving article metadata to database.')
+                        add_article(Session=self._database, **article)
+                        update_submission_status(self._database, submission.base36_id, 'TO_REPLY')
+                    except Exception as e:
+                        logging.error(e)
+                        update_submission_status(self._database, submission.base36_id, 'ERROR')
 
                     # ------
             logging.info('No pending articles found, waiting 5 seconds before looking up again.')
