@@ -15,46 +15,46 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 class RedditBot:
     def __init__(self, mode='watch'):
         logging.info('The Bot is now starting.'.format(mode))
-        self.__config = self.__load_config()
+        self._config = self._load_config()
 
         # Carrega os módulos básicos
-        self.__setup_database()
-        self.__setup_plugins()
+        self._setup_database()
+        self._setup_plugins()
         
         # Configura apenas os módulos necessários para cada processo, 
         # evitando que o Bot carregue tudo desnecessariamente.
         
         if mode in ['watch', 'reply']:
-            self.__setup_reddit()
+            self._setup_reddit()
         elif mode == 'fetch':
-            self.__setup_summarizer()
+            self._setup_summarizer()
 
-    def __load_config(self, config_file='config.yml'):
+    def _load_config(self, config_file='config.yml'):
         logging.info('Loading config file.')
         with open(config_file, 'r') as file:
             config = yaml.load(file)
         return config
 
-    def __setup_plugins(self):
+    def _setup_plugins(self):
         logging.info('Loading plugins.')
-        self.__plugin_manager = PluginManager()
+        self._plugin_manager = PluginManager()
 
-    def __setup_reddit(self):
+    def _setup_reddit(self):
         logging.info('Connecting to Reddit.')
-        self.__reddit = Reddit(**self.__config['reddit'])
+        self._reddit = Reddit(**self._config['reddit'])
         logging.info('Connected to Reddit!')
 
-    def __setup_database(self):
+    def _setup_database(self):
         logging.info('Setting up database.')
-        database = Database(**self.__config['database'])
+        database = Database(**self._config['database'])
         database.connect()
         database.create_tables()
-        self.__database = database.session
+        self._database = database.session
         logging.info('Database is now set up.')
 
-    def __setup_summarizer(self):
+    def _setup_summarizer(self):
         logging.info('Loading summarizer.')
-        self.__summarizer = Summarizer(**self.__config['summarizer']).summarize
+        self._summarizer = Summarizer(**self._config['summarizer']).summarize
         logging.info('Summarizer loaded.')
 
     def watch_subreddits(self):
@@ -65,8 +65,8 @@ class RedditBot:
 
         logging.info('Watching for new submissions.')
 
-        subreddits_list = '+'.join(self.__config['bot']['subreddits'])
-        subreddits = self.__reddit.subreddit(subreddits_list)
+        subreddits_list = '+'.join(self._config['bot']['subreddits'])
+        subreddits = self._reddit.subreddit(subreddits_list)
 
         # Looping infinito que assiste cada submissão, verifica
         # se a URL da submissão coincide com algum padrão 
@@ -75,10 +75,10 @@ class RedditBot:
 
         for submission in subreddits.stream.submissions():
             logging.info('Found new submission: {}'.format(submission.id))
-            if url_matches_plugin(self.__plugin_manager, submission.url)\
-               and not submission_exists(self.__database, submission.id):
+            if url_matches_plugin(self._plugin_manager, submission.url)\
+               and not submission_exists(self._database, submission.id):
                 logging.info('Submission url matches, saving to database: {}'.format(submission.id))
-                add_submission(self.__database, submission.id, submission.url)
+                add_submission(self._database, submission.id, submission.url)
 
     def fetch_articles(self):
 
@@ -99,9 +99,9 @@ class RedditBot:
         logging.info('Looking up for pending articles.')
 
         while True:
-            submissions = get_submissions_by_status(self.__database, 'TO_FETCH')
+            submissions = get_submissions_by_status(self._database, 'TO_FETCH')
             for submission in submissions:
-                if not article_exists(self.__database, submission.id):
+                if not article_exists(self._database, submission.id):
 
 
                     # ------
@@ -109,8 +109,8 @@ class RedditBot:
                     # Por algum motivo as linhas a seguir não me agradam, mas vou deixar
                     # para outro alguém ou eu em outra oportunidade refatorar melhor.
 
-                    plugin_name = url_matches_plugin(self.__plugin_manager, submission.url)
-                    plugin = self.__plugin_manager.get_plugin(plugin_name)
+                    plugin_name = url_matches_plugin(self._plugin_manager, submission.url)
+                    plugin = self._plugin_manager.get_plugin(plugin_name)
 
                     logging.info('Fetching article for submission base36_id: {} with plugin: {}'.format(submission.base36_id, plugin_name))
 
@@ -128,16 +128,16 @@ class RedditBot:
                     article = {'submission_id': submission.id,
                                'subtitle': article_metadata['subtitle'],
                                'date_published': article_metadata['date_published'],
-                               'summary': self.__summarizer(article_metadata['content']),
+                               'summary': self._summarizer(article_metadata['content']),
                                'archiveis_link': archiveis_link}
 
                     logging.info('Saving article metadata to database.')
-                    add_article(Session=self.__database, **article)
-                    update_submission_status(self.__database, submission.base36_id, 'TO_REPLY')
+                    add_article(Session=self._database, **article)
+                    update_submission_status(self._database, submission.base36_id, 'TO_REPLY')
 
                     # ------
             logging.info('No pending articles found, waiting 5 seconds before looking up again.')
-            self.__database.commit()
+            self._database.commit()
             time.sleep(5)
 
     def reply_submissions(self):
@@ -154,18 +154,18 @@ class RedditBot:
         logging.info('Looking up for submissions to reply')
 
         while True:
-            submissions = get_submissions_by_status(self.__database, 'TO_REPLY')
+            submissions = get_submissions_by_status(self._database, 'TO_REPLY')
             for submission in submissions:
-                article = article_exists(self.__database, submission.id)
+                article = article_exists(self._database, submission.id)
                 if article:
                     logging.info('Replying to submission: {}'.format(submission.base36_id))
                     reply = render_template('summary.md', article=article)
-                    submission_to_reply = self.__reddit.submission(id=submission.base36_id)
+                    submission_to_reply = self._reddit.submission(id=submission.base36_id)
                     submission_to_reply.reply(reply)
-                    update_submission_status(self.__database, submission.base36_id, 'DONE')
+                    update_submission_status(self._database, submission.base36_id, 'DONE')
                     time.sleep(2)
 
             logging.info('No pending submissions found, waiting 5 seconds before looking up again.')
-            self.__database.commit()
+            self._database.commit()
             time.sleep(5)
             
