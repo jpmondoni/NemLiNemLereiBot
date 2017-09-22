@@ -6,8 +6,8 @@ from .pluginmanager import PluginManager
 from .database import Database
 from .helpers import url_matches_plugin, get_archiveis_url, render_template
 from .summarizer import Summarizer
-from .database.helpers import submission_exists, add_submission, update_submission_status,\
-    get_submissions_by_status, article_exists, add_article
+from .database.helpers import add_submission, update_submission_status,\
+    get_submissions_by_status, add_article
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -75,8 +75,7 @@ class RedditBot:
 
         for submission in subreddits.stream.submissions():
             logging.info('Found new submission: {}'.format(submission.id))
-            if url_matches_plugin(self._plugin_manager, submission.url)\
-               and not submission_exists(self._database, submission.id):
+            if url_matches_plugin(self._plugin_manager, submission.url):
                 logging.info('Submission url matches, saving to database: {}'.format(submission.id))
                 add_submission(self._database, submission.id, submission.url)
 
@@ -101,42 +100,39 @@ class RedditBot:
         while True:
             submissions = get_submissions_by_status(self._database, 'TO_FETCH')
             for submission in submissions:
-                if not article_exists(self._database, submission.id):
+                # ------
 
+                # Por algum motivo as linhas a seguir não me agradam, mas vou deixar
+                # para outro alguém ou eu em outra oportunidade refatorar melhor.
+                try:
+                    plugin_name = url_matches_plugin(self._plugin_manager, submission.url)
+                    plugin = self._plugin_manager.get_plugin(plugin_name)
 
-                    # ------
+                    logging.info('Fetching article for submission base36_id: {} with plugin: {}'.format(submission.base36_id, plugin_name))
 
-                    # Por algum motivo as linhas a seguir não me agradam, mas vou deixar
-                    # para outro alguém ou eu em outra oportunidade refatorar melhor.
+                    article_metadata = plugin.get_article_metadata(submission.url)
+
+                    # archiveis não responde na rede da Amazon AWS, provavelmente
+                    # precisarei usar algum proxy, mas deixo aqui caso funcione para mais
+                    # alguém
                     try:
-                        plugin_name = url_matches_plugin(self._plugin_manager, submission.url)
-                        plugin = self._plugin_manager.get_plugin(plugin_name)
+                        archiveis_link = get_archiveis_url(submission.url)
+                    except IndexError:
+                        logging.error('Tried to capture the page using archive.is API but didn\'t work.')
+                        archiveis_link = None
 
-                        logging.info('Fetching article for submission base36_id: {} with plugin: {}'.format(submission.base36_id, plugin_name))
+                    article = {'submission_id': submission.id,
+                            'subtitle': article_metadata['subtitle'],
+                            'date_published': article_metadata['date_published'],
+                            'summary': self._summarizer(article_metadata['content']),
+                            'archiveis_link': archiveis_link}
 
-                        article_metadata = plugin.get_article_metadata(submission.url)
-
-                        # archiveis não responde na rede da Amazon AWS, provavelmente
-                        # precisarei usar algum proxy, mas deixo aqui caso funcione para mais
-                        # alguém
-                        try:
-                            archiveis_link = get_archiveis_url(submission.url)
-                        except IndexError:
-                            logging.error('Tried to capture the page using archive.is API but didn\'t work.')
-                            archiveis_link = None
-
-                        article = {'submission_id': submission.id,
-                                'subtitle': article_metadata['subtitle'],
-                                'date_published': article_metadata['date_published'],
-                                'summary': self._summarizer(article_metadata['content']),
-                                'archiveis_link': archiveis_link}
-
-                        logging.info('Saving article metadata to database.')
-                        add_article(Session=self._database, **article)
-                        update_submission_status(self._database, submission.base36_id, 'TO_REPLY')
-                    except Exception as e:
-                        logging.error(e)
-                        update_submission_status(self._database, submission.base36_id, 'ERROR')
+                    logging.info('Saving article metadata to database.')
+                    add_article(Session=self._database, **article)
+                    update_submission_status(self._database, submission.base36_id, 'TO_REPLY')
+                except Exception as e:
+                    logging.error(e)
+                    update_submission_status(self._database, submission.base36_id, 'ERROR')
 
                     # ------
             logging.info('No pending articles found, waiting 5 seconds before looking up again.')

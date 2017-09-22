@@ -1,6 +1,6 @@
 from . import Base
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
 import datetime
+from sqlalchemy import (Column, Integer, String, DateTime)
 
 
 class Submission(Base):
@@ -13,5 +13,6 @@ class Submission(Base):
     added_date = Column(DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return "<Submission('%s', '%s', '%s'>" % (
-            self.id, self.base36_id, self.url)
+        return "<Submission('%s', '%s', '%s'>" % (self.id,
+                                                  self.base36_id,
+                                                  self.url)
