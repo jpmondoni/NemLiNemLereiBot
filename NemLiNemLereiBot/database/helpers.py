@@ -18,8 +18,14 @@ def update_submission_status(Session, submission_id, status):
 
 def get_submissions_by_status(Session, status):
     submissions = Session.query(Submission.id, Submission.base36_id,
-                                Submission.url, Submission.status).filter_by(status=status).all()
+                                Submission.url, Submission.status)\
+                         .filter_by(status=status).all()
     return submissions
+
+
+def get_article(Session, **kwargs):
+    article = Session.query(Article).filter_by(**kwargs).all()
+    return article
 
 
 def add_article(Session, **kwargs):

@@ -7,7 +7,8 @@ from .database import Database
 from .helpers import (url_matches_plugin, render_template)
 from .summarizer import Summarizer
 from .database.helpers import (add_submission, update_submission_status,
-                               get_submissions_by_status, add_article)
+                               get_submissions_by_status, add_article,
+                               get_article)
 
 
 logging.basicConfig(level=logging.INFO,
@@ -159,18 +160,17 @@ class RedditBot:
         while True:
             submissions = get_submissions_by_status(self._database, 'TO_REPLY')
             for submission in submissions:
-                article = article_exists(self._database,
-                                         submission.id)
-                if article:
-                    logging.info('Replying to submission: {}'.format(
-                        submission.base36_id))
-                    reply = render_template('summary.md', article=article)
-                    submission_to_reply = self._reddit.submission(
-                        id=submission.base36_id)
-                    submission_to_reply.reply(reply)
-                    update_submission_status(
-                        self._database, submission.base36_id, 'DONE')
-                    time.sleep(2)
+                article = get_article(self._database,
+                                      submission_id=submission.id)
+                logging.info('Replying to submission: {}'.format(
+                    submission.base36_id))
+                reply = render_template('summary.md', article=article)
+                submission_to_reply = self._reddit.submission(
+                    id=submission.base36_id)
+                submission_to_reply.reply(reply)
+                update_submission_status(
+                    self._database, submission.base36_id, 'DONE')
+                time.sleep(2)
 
             logging.info(
                 'No pending submissions found, waiting 5 seconds before looking up again.')
