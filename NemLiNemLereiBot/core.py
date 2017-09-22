@@ -4,7 +4,7 @@ import logging
 from praw import Reddit
 from .pluginmanager import PluginManager
 from .database import Database
-from .helpers import url_matches_plugin, get_archiveis_url, render_template
+from .helpers import url_matches_plugin, render_template
 from .summarizer import Summarizer
 from .database.helpers import add_submission, update_submission_status,\
     get_submissions_by_status, add_article
@@ -89,11 +89,6 @@ class RedditBot:
         # o summarizer para resumir o conteúdo extraído pelo plugin,
         # armazena no banco de dados o resultado e atualiza o status
         # para 'TO_REPLY'
-        # Também usava o archiveis para congelar a página e gerar um link
-        # que poderia ser usado para burlar o paywall ou ver a página
-        # caso com algum motivo esteja offline. Mas o Bot roda em um
-        # servidor Cloud da Amazon e pelo que testei a API do archive.is
-        # não responde a partir daquele IP.
 
         logging.info('Looking up for pending articles.')
 
@@ -112,20 +107,10 @@ class RedditBot:
 
                     article_metadata = plugin.get_article_metadata(submission.url)
 
-                    # archiveis não responde na rede da Amazon AWS, provavelmente
-                    # precisarei usar algum proxy, mas deixo aqui caso funcione para mais
-                    # alguém
-                    try:
-                        archiveis_link = get_archiveis_url(submission.url)
-                    except IndexError:
-                        logging.error('Tried to capture the page using archive.is API but didn\'t work.')
-                        archiveis_link = None
-
                     article = {'submission_id': submission.id,
                             'subtitle': article_metadata['subtitle'],
                             'date_published': article_metadata['date_published'],
-                            'summary': self._summarizer(article_metadata['content']),
-                            'archiveis_link': archiveis_link}
+                            'summary': self._summarizer(article_metadata['content'])}
 
                     logging.info('Saving article metadata to database.')
                     add_article(Session=self._database, **article)
