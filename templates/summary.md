@@ -1,6 +1,6 @@
 {% if article.date_published %}
 ^Notícia ^publicada ^em ^20/09/2017, ^segue ^o ^melhor ^resumo ^que ^eu ^pude ^fazer:
-{% else %
+{% else %}
 ^Segue ^o ^melhor ^resumo ^que ^eu ^pude ^fazer:
 {% endif %}  
 
