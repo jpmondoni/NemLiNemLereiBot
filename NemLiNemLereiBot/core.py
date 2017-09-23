@@ -64,9 +64,9 @@ class RedditBot:
 
         logging.info('Watching for new submissions.')
 
-        # Caso haja mais um subreddit, junta todos, exemplo:
+        # Caso haja mais de um subreddit, junta todos, exemplo:
         # brasil+portugal+BrasildoB, assim o Bot irá buscar
-        # por novas submissions de cada um.
+        # por novas submissions de cada um de uma vez só.
 
         subreddits_list = '+'.join(self._config['bot']['subreddits'])
         subreddits = self._reddit.subreddit(subreddits_list)

@@ -4,9 +4,11 @@ NemLiNemLereiBot é um Reddit Bot inspirado no /u/autotldr que resume as notíci
 
 ## TODO
 
-- [ ] Refatorar e organizar o código (Principalmente o pacote database)
-- [ ] Tratar Exceptions
+- [ ] Refatorar e organizar o código (Em andamento).
+- [ ] Tratar Exceptions (Em andamento).
 - [ ] Contar em porcentagem a redução do artigo em relação ao resumo.
+- [ ] Apagar automaticamente comentários com karma negativo.
+- [ ] Adicionar opção "opt out' para que o usuário possa impedir o bot de comentar suas publicações.
 
 ## Instalação
 
