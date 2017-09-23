@@ -6,7 +6,7 @@ from praw.exceptions import APIException
 from jinja2 import TemplateError
 from .pluginmanager import PluginManager
 from .database import Database
-from .helpers import (url_matches_plugin, render_template)
+from .helpers import render_template
 from .summarizer import Summarizer
 from .database.helpers import (add_submission, get_submissions,
                                add_article, get_article)
@@ -62,23 +62,22 @@ class RedditBot:
 
     def watch_subreddits(self):
 
-        # Caso haja mais um subreddit, junta todos exemplo:
-        # brasil+portugal+BrasildoB, assim o Bot irá buscar
-        # por novas submissões de cada um.
-
         logging.info('Watching for new submissions.')
+
+        # Caso haja mais um subreddit, junta todos, exemplo:
+        # brasil+portugal+BrasildoB, assim o Bot irá buscar
+        # por novas submissions de cada um.
 
         subreddits_list = '+'.join(self._config['bot']['subreddits'])
         subreddits = self._reddit.subreddit(subreddits_list)
 
-        # Looping infinito que assiste cada submissão, verifica
+        # Looping infinito que assiste cada submission, verifica
         # se a URL da submissão coincide com algum padrão
-        # definido por um plugin e armazena no banco de dados
-        # com o status 'TO_FETCH' para ser processado pelo fetch_articles.
+        # definido por um plugin e armazena no banco de dados.
 
         for submission in subreddits.stream.submissions():
             logging.info('Found new submission: {}'.format(submission.id))
-            if url_matches_plugin(self._plugin_manager, submission.url):
+            if self._plugin_manager.url_matches_plugin(submission.url):
                 logging.info('Submission url matches, saving to database: {}'
                              .format(submission.id))
                 add_submission(self._database,
@@ -99,7 +98,8 @@ class RedditBot:
         logging.info('Looking for pending articles to fetch data from.')
 
         while True:
-            submissions = get_submissions(self._database, status='TO_FETCH')
+            submissions = get_submissions(self._database,
+                                          status='TO_FETCH')
             for submission in submissions:
                 # ------
 
@@ -107,8 +107,9 @@ class RedditBot:
                 # mas vou deixar para outro alguém ou eu em outra
                 # oportunidade refatorar melhor.
                 try:
-                    plugin_name = url_matches_plugin(
-                        self._plugin_manager, submission.url)
+                    plugin_name = (self._plugin_manager
+                                   .url_matches_plugin(self._plugin_manager,
+                                                       submission.url))
                     plugin = self._plugin_manager.get_plugin(plugin_name)
 
                     logging.info('Fetching article for submission '

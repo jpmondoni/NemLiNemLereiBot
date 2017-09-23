@@ -1,9 +1,11 @@
 from pluginbase import PluginBase
+import re
 
 
 class PluginManager():
     def __init__(self):
-        self.plugin_source = PluginBase(package='plugins').make_plugin_source(searchpath=['plugins'])
+        self.plugin_source = (PluginBase(package='plugins')
+                              .make_plugin_source(searchpath=['plugins']))
         self.loaded_plugins = {}
         self.load_plugins()
 
@@ -18,3 +20,8 @@ class PluginManager():
     def get_plugin(self, plugin_name):
         plugin = self.plugin_source.load_plugin(plugin_name).Plugin()
         return plugin
+
+    def url_matches_plugin(self, url):
+        for plugin, pattern in self.loaded_plugins.items():
+            if re.match(pattern, url):
+                return plugin
