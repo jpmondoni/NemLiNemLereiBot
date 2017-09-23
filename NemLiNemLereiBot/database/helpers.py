@@ -8,7 +8,7 @@ def add_submission(Session, **kwargs):
             Submission(**kwargs)
         )
         Session.commit()
-    except exc.SQLAlchemyError:
+    except SQLAlchemyError:
         Session.rollback()
 
 def update_submission_status(Session, submission_id, status):
