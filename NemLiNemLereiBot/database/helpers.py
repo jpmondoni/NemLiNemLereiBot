@@ -11,11 +11,6 @@ def add_submission(Session, **kwargs):
     except SQLAlchemyError:
         Session.rollback()
 
-def update_submission_status(Session, submission_id, status):
-    submission = Session.query(Submission).filter_by(base36_id=submission_id)
-    submission.update({'status': status}, synchronize_session='fetch')
-    Session.commit()
-
 
 def get_submissions(Session, **kwargs):
     submissions = Session.query(Submission).filter_by(**kwargs).all()

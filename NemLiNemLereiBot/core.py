@@ -8,9 +8,8 @@ from .pluginmanager import PluginManager
 from .database import Database
 from .helpers import (url_matches_plugin, render_template)
 from .summarizer import Summarizer
-from .database.helpers import (add_submission, update_submission_status,
-                               get_submissions, add_article,
-                               get_article)
+from .database.helpers import (add_submission, get_submissions,
+                               add_article, get_article)
 
 
 logging.basicConfig(level=logging.INFO,
@@ -97,7 +96,7 @@ class RedditBot:
         # armazena no banco de dados o resultado e atualiza o status
         # para 'TO_REPLY'
 
-        logging.info('Looking up for pending articles.')
+        logging.info('Looking for pending articles to fetch data from.')
 
         while True:
             submissions = get_submissions(self._database, status='TO_FETCH')
@@ -129,14 +128,12 @@ class RedditBot:
                     logging.info('Saving article metadata to database.')
                     add_article(Session=self._database,
                                 **article)
-                    update_submission_status(self._database,
-                                             submission.base36_id,
-                                             'TO_REPLY')
+                    submission.status = 'TO_REPLY'
+                    self._database.commit()
                 except Exception as e:
                     logging.error(e)
-                    update_submission_status(self._database,
-                                             submission.base36_id,
-                                             'FETCH_ERROR')
+                    submission.status = 'FETCH_ERROR'
+                    self._database.commit()
 
                     # ------
             logging.info('No pending articles found, '
@@ -162,17 +159,15 @@ class RedditBot:
                                             article=article)
                     to_reply = self._reddit.submission(id=submission.base36_id)
                     to_reply.reply(reply)
-                    update_submission_status(self._database,
-                                             submission.base36_id,
-                                             'DONE')
+                    submission.status = 'DONE'
+                    self._database.commit()
                     logging.info('Replied to submission: {}'
                                  .format(submission.base36_id))
                 except (TemplateError, APIException) as e:
                     logging.error('Tried to reply to submission {} but failed!'
                                   .format(submission.base36_id))
                     logging.error(e)
-                    update_submission_status(self._database,
-                                             submission.base36_id,
-                                             'REPLY_ERROR')
+                    submission.status = 'REPLY_ERROR'
+                    self._database.commit()
             self._database.flush()
             time.sleep(5)
