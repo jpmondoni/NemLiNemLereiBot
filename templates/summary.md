@@ -1,21 +1,22 @@
-{% if article.date_published %}
-^Notícia ^publicada ^em ^20/09/2017, ^segue ^o ^melhor ^resumo ^que ^eu ^pude ^fazer:
+{% if article.percentage_decrease %}
+^(Este é o melhor NL;NL que eu pude fazer, o artigo original foi reduzido em {{'%0.2f' % article.percentage_decrease|float}}%. [Eu sou um Bot 🤖])  
 {% else %}
-^Segue ^o ^melhor ^resumo ^que ^eu ^pude ^fazer:
-{% endif %}  
+^(Este é o melhor NL;NL que eu pude fazer: [Eu sou um Bot 🤖])  
+{% endif %}
 
 {% if article.subtitle %}
 >**{{ article.subtitle|trim }}**  
 
 {% endif %}
-> {{ article.summary }}
+> {{ article.summary }}  
 
-{% if article.archiveis_link %}
-^(O site está fora do ar ou algum problema com paywall?) [^(Leia aqui.)]({{ article.archiveis_link }})
+{% if article.archiveis_url %}
+^(O site está offline ou cai no paywall?) [^(Leia aqui.)]({{ article.archiveis_url }})  
 {% endif %}
 
 ***
-{% if article.percentage_decrease %}
-^({{'%0.2f' % article.percentage_decrease|float}}% reduzido.)
+{% if article.date_published %}
+^[desenvolvedor](https://www.reddit.com/u/CaioWzy) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot) ^| ^(notícia publicada em {{ article.date_published.strftime('%d/%m/%Y') }})  
+{% else %}
+^[desenvolvedor](https://www.reddit.com/u/CaioWzy) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot)  
 {% endif %}
-^[[desenvolvedor](https://www.reddit.com/u/CaioWzy) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot)]
