@@ -99,7 +99,7 @@ class RedditBot:
                     content = metadata['content']
                     summary = self._summarize(content)
                     decrease = percentage_decrease(content, summary)
-                    metadata['summary'] = self._summarize(metadata['content'])
+                    metadata['summary'] = summary
                     metadata['percentage_decrease'] = decrease
                     metadata.pop('content')
                     add_article(self._database,
