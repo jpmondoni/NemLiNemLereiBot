@@ -83,6 +83,7 @@ class RedditBot:
                 logging.error('Tried to read submissions stream but failed,'
                               ' trying again!')
                 logging.error(e)
+            time.sleep(5)
 
     def fetch_articles(self):
 
@@ -129,7 +130,7 @@ class RedditBot:
                     logging.error(e)
                     submission.status = 'FETCH_ERROR'
                     self._database.commit()
-            self._database.flush()
+            self._database.commit()
             time.sleep(5)
 
     def reply_submissions(self):
@@ -157,5 +158,5 @@ class RedditBot:
                     logging.error(e)
                     submission.status = 'REPLY_ERROR'
                     self._database.commit()
-            self._database.flush()
+            self._database.commit()
             time.sleep(5)
