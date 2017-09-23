@@ -6,7 +6,7 @@ from praw.exceptions import APIException
 from jinja2 import TemplateError
 from .pluginmanager import PluginManager
 from .database import Database
-from .helpers import render_template, percentage_decrease
+from .helpers import render_template, percentage_decrease, archive_page
 from .summarizer import Summarizer
 from .database.helpers import (add_submission, get_submissions,
                                add_article, get_article)
@@ -94,6 +94,12 @@ class RedditBot:
                                  'base36_id: {} with plugin: {}.'
                                  .format(submission.base36_id,
                                          plugin_name))
+                    try:
+                        archiveis_url = archive_page(submission.url)
+                    except Exception as e:
+                        archiveis_url = None
+                        logging.error('Tried to capture the page but failed!')
+                        logging.error(e)
 
                     metadata = plugin.extract_metadata(submission.url)
                     content = metadata['content']
@@ -101,6 +107,8 @@ class RedditBot:
                     decrease = percentage_decrease(content, summary)
                     metadata['summary'] = summary
                     metadata['percentage_decrease'] = decrease
+                    if archiveis_url:
+                        metadata['archiveis_url'] = archiveis_url
                     metadata.pop('content')
                     add_article(self._database,
                                 submission_id=submission.id,
@@ -110,7 +118,7 @@ class RedditBot:
 
                     submission.status = 'TO_REPLY'
                     self._database.commit()
-                except (Exception) as e:
+                except Exception as e:
                     logging.error(e)
                     submission.status = 'FETCH_ERROR'
                     self._database.commit()

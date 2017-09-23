@@ -1,6 +1,6 @@
 from . import Base
 from sqlalchemy import (Column, Integer, DateTime, Text,
-                        ForeignKey, Float)
+                        ForeignKey, Float, String)
 
 
 class Article(Base):
@@ -11,6 +11,7 @@ class Article(Base):
     summary = Column(Text, nullable=False)
     date_published = Column(DateTime)
     percentage_decrease = Column(Float)
+    archiveis_url = Column(String(255))
     submission_id = Column(Integer,
                            ForeignKey("submissions.id"),
                            unique=True, nullable=False)
