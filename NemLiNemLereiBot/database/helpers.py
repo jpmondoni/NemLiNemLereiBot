@@ -1,5 +1,5 @@
 from .models import Submission, Article
-from sqlalchemy import exc
+from sqlalchemy.exc import SQLAlchemyError
 
 
 def add_submission(Session, **kwargs):
@@ -33,5 +33,5 @@ def add_article(Session, **kwargs):
             Article(**kwargs)
         )
         Session.commit()
-    except exc.SQLAlchemyError:
+    except SQLAlchemyError:
         Session.rollback()

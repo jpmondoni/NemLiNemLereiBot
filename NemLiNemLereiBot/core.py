@@ -146,33 +146,27 @@ class RedditBot:
 
     def reply_submissions(self):
 
+        logging.info('Looking for new submissions to reply to.')
+
         # Busca em loop infinito com intervalo de 5 segundos cada query
         # renderiza com o jinja2 e responde a submission.
 
-        logging.info('Looking for new submissions to reply to.')
-
         while True:
-
             submissions = get_submissions(self._database,
                                           status='TO_REPLY')
             for submission in submissions:
-
                 article = get_article(self._database,
                                       submission_id=submission.id)
-
                 try:
                     reply = render_template('summary.md',
                                             article=article)
-
                     to_reply = self._reddit.submission(id=submission.base36_id)
                     to_reply.reply(reply)
                     update_submission_status(self._database,
                                              submission.base36_id,
                                              'DONE')
-
                     logging.info('Replied to submission: {}'
                                  .format(submission.base36_id))
-
                 except (TemplateError, APIException) as e:
                     logging.error('Tried to reply to submission {} but failed!'
                                   .format(submission.base36_id))
