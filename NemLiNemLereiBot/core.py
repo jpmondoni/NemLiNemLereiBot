@@ -100,7 +100,6 @@ class RedditBot:
                         archiveis_url = None
                         logging.error('Tried to capture the page but failed!')
                         logging.error(e)
-
                     metadata = plugin.extract_metadata(submission.url)
                     content = metadata['content']
                     summary = self._summarize(content)
