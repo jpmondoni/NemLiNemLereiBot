@@ -6,7 +6,7 @@ from praw.exceptions import APIException
 from jinja2 import TemplateError
 from .pluginmanager import PluginManager
 from .database import Database
-from .helpers import render_template
+from .helpers import render_template, percentage_decrease
 from .summarizer import Summarizer
 from .database.helpers import (add_submission, get_submissions,
                                add_article, get_article)
@@ -57,23 +57,15 @@ class RedditBot:
 
     def _setup_summarizer(self):
         logging.info('Loading summarizer.')
-        self._summarizer = Summarizer(**self._config['summarizer']).summarize
+        self._summarize = Summarizer(**self._config['summarizer']).summarize
         logging.info('Summarizer loaded.')
 
     def watch_subreddits(self):
 
         logging.info('Watching for new submissions.')
 
-        # Caso haja mais de um subreddit, junta todos, exemplo:
-        # brasil+portugal+BrasildoB, assim o Bot irá buscar
-        # por novas submissions de cada um de uma vez só.
-
         subreddits_list = '+'.join(self._config['bot']['subreddits'])
         subreddits = self._reddit.subreddit(subreddits_list)
-
-        # Looping infinito que assiste cada submission, verifica
-        # se a URL da submissão coincide com algum padrão
-        # definido por um plugin e armazena no banco de dados.
 
         for submission in subreddits.stream.submissions():
             logging.info('Found new submission: {}'.format(submission.id))
@@ -86,60 +78,43 @@ class RedditBot:
 
     def fetch_articles(self):
 
-        # Loopíng infinito com intervalo de 5 segundos, busca por
-        # submissões com status 'TO_FETCH', verifica de qual plugin
-        # o padrão da URL coincide, invoca o plugin e passa a URL
-        # para o método get_article_metadata do plugin, esperando
-        # um dicionário contendo os metadados do artigo, invoca
-        # o summarizer para resumir o conteúdo extraído pelo plugin,
-        # armazena no banco de dados o resultado e atualiza o status
-        # para 'TO_REPLY'
-
         logging.info('Looking for pending articles to fetch data from.')
 
         while True:
             submissions = get_submissions(self._database,
                                           status='TO_FETCH')
             for submission in submissions:
-                # ------
-
-                # Por algum motivo as linhas a seguir não me agradam,
-                # mas vou deixar para outro alguém ou eu em outra
-                # oportunidade refatorar melhor.
                 try:
                     plugin_name = (self._plugin_manager
-                                   .url_matches_plugin(self._plugin_manager,
-                                                       submission.url))
-                    plugin = self._plugin_manager.get_plugin(plugin_name)
+                                   .url_matches_plugin(submission.url))
+                    plugin = (self._plugin_manager
+                              .get_plugin(plugin_name))
 
                     logging.info('Fetching article for submission '
-                                 'base36_id: {} with plugin: {}'
+                                 'base36_id: {} with plugin: {}.'
                                  .format(submission.base36_id,
                                          plugin_name))
 
-                    article_metadata = plugin.get_article_metadata(
-                        submission.url
-                    )
-
-                    article = {'submission_id': submission.id,
-                               'subtitle': article_metadata['subtitle'],
-                               'date_published': article_metadata['date_published'],
-                               'summary': self._summarizer(article_metadata['content'])}
+                    metadata = plugin.extract_metadata(submission.url)
+                    content = metadata['content']
+                    summary = self._summarize(content)
+                    decrease = percentage_decrease(content, summary)
+                    metadata['summary'] = self._summarize(metadata['content'])
+                    metadata['percentage_decrease'] = decrease
+                    metadata.pop('content')
+                    add_article(self._database,
+                                submission_id=submission.id,
+                                **metadata)
 
                     logging.info('Saving article metadata to database.')
-                    add_article(Session=self._database,
-                                **article)
+
                     submission.status = 'TO_REPLY'
                     self._database.commit()
-                except Exception as e:
+                except (Exception) as e:
                     logging.error(e)
                     submission.status = 'FETCH_ERROR'
                     self._database.commit()
-
-                    # ------
-            logging.info('No pending articles found, '
-                         'waiting 5 seconds before looking up again.')
-            self._database.commit()
+            self._database.flush()
             time.sleep(5)
 
     def reply_submissions(self):

@@ -10,7 +10,7 @@ class Plugin():
         PluginManager.register_plugin(
             'g1_globo_com', r"^https?://g1.globo.com((?!/google/amp/))(.*)/noticia/(.*).ghtml$")
 
-    def get_article_metadata(self, url):
+    def extract_metadata(self, url):
         self.url = url
         self.page_html = self.request_page()
         self.soup = self.get_soup()

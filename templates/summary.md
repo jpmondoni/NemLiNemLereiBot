@@ -15,5 +15,7 @@
 {% endif %}
 
 ***
-
+{% if article.percentage_decrease %}
+^({{'%0.2f' % article.percentage_decrease|float}}% reduzido.)
+{% endif %}
 ^[[desenvolvedor](https://www.reddit.com/u/CaioWzy) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot)]
