@@ -2,12 +2,14 @@ import yaml
 import time
 import logging
 from praw import Reddit
+from praw.exceptions import APIException
+from jinja2 import TemplateError
 from .pluginmanager import PluginManager
 from .database import Database
 from .helpers import (url_matches_plugin, render_template)
 from .summarizer import Summarizer
 from .database.helpers import (add_submission, update_submission_status,
-                               get_submissions_by_status, add_article,
+                               get_submissions, add_article,
                                get_article)
 
 
@@ -81,8 +83,8 @@ class RedditBot:
                 logging.info('Submission url matches, saving to database: {}'
                              .format(submission.id))
                 add_submission(self._database,
-                               submission.id,
-                               submission.url)
+                               base36_id=submission.id,
+                               url=submission.url)
 
     def fetch_articles(self):
 
@@ -98,7 +100,7 @@ class RedditBot:
         logging.info('Looking up for pending articles.')
 
         while True:
-            submissions = get_submissions_by_status(self._database, 'TO_FETCH')
+            submissions = get_submissions(self._database, status='TO_FETCH')
             for submission in submissions:
                 # ------
 
@@ -134,7 +136,7 @@ class RedditBot:
                     logging.error(e)
                     update_submission_status(self._database,
                                              submission.base36_id,
-                                             'ERROR')
+                                             'FETCH_ERROR')
 
                     # ------
             logging.info('No pending articles found, '
@@ -144,35 +146,39 @@ class RedditBot:
 
     def reply_submissions(self):
 
-        # Busca por submissões com o status 'TO_REPLY', puxa os metadados do
-        # artigo amazenados do banco de dados, renderiza o template da resposta
-        # com o Jinja2, responde a publicação pelo id único em base36 gerado
-        # pelo Reddit e atualiza o status para 'DONE'.
-        # A preferência pelo Jinja2
-        # deve-se ao fato de ser uma solução já muito bem desenvolvida para
-        # renderização de templates, muito mais simples e fácil de usar que
-        # reinventar a roda.
-        # O tempo de 2 segundos após a resposta é o limite imposto pela
-        # API do Reddit.
+        # Busca em loop infinito com intervalo de 5 segundos cada query
+        # renderiza com o jinja2 e responde a submission.
 
-        logging.info('Looking up for submissions to reply')
+        logging.info('Looking for new submissions to reply to.')
 
         while True:
-            submissions = get_submissions_by_status(self._database, 'TO_REPLY')
+
+            submissions = get_submissions(self._database,
+                                          status='TO_REPLY')
             for submission in submissions:
+
                 article = get_article(self._database,
                                       submission_id=submission.id)
-                logging.info('Replying to submission: {}'.format(
-                    submission.base36_id))
-                reply = render_template('summary.md', article=article)
-                submission_to_reply = self._reddit.submission(
-                    id=submission.base36_id)
-                submission_to_reply.reply(reply)
-                update_submission_status(
-                    self._database, submission.base36_id, 'DONE')
-                time.sleep(2)
 
-            logging.info(
-                'No pending submissions found, waiting 5 seconds before looking up again.')
-            self._database.commit()
+                try:
+                    reply = render_template('summary.md',
+                                            article=article)
+
+                    to_reply = self._reddit.submission(id=submission.base36_id)
+                    to_reply.reply(reply)
+                    update_submission_status(self._database,
+                                             submission.base36_id,
+                                             'DONE')
+
+                    logging.info('Replied to submission: {}'
+                                 .format(submission.base36_id))
+
+                except (TemplateError, APIException) as e:
+                    logging.error('Tried to reply to submission {} but failed!'
+                                  .format(submission.base36_id))
+                    logging.error(e)
+                    update_submission_status(self._database,
+                                             submission.base36_id,
+                                             'REPLY_ERROR')
+            self._database.flush()
             time.sleep(5)

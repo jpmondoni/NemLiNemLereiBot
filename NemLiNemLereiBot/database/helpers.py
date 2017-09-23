@@ -1,4 +1,5 @@
 from .models import Submission, Article
+from sqlalchemy import exc
 
 
 def add_submission(Session, **kwargs):
@@ -7,8 +8,8 @@ def add_submission(Session, **kwargs):
             Submission(**kwargs)
         )
         Session.commit()
-    except Exception:
-        pass
+    except exc.SQLAlchemyError:
+        Session.rollback()
 
 def update_submission_status(Session, submission_id, status):
     submission = Session.query(Submission).filter_by(base36_id=submission_id)
@@ -16,15 +17,13 @@ def update_submission_status(Session, submission_id, status):
     Session.commit()
 
 
-def get_submissions_by_status(Session, status):
-    submissions = Session.query(Submission.id, Submission.base36_id,
-                                Submission.url, Submission.status)\
-                         .filter_by(status=status).all()
+def get_submissions(Session, **kwargs):
+    submissions = Session.query(Submission).filter_by(**kwargs).all()
     return submissions
 
 
 def get_article(Session, **kwargs):
-    article = Session.query(Article).filter_by(**kwargs).all()
+    article = Session.query(Article).filter_by(**kwargs).first()
     return article
 
 
@@ -34,5 +33,5 @@ def add_article(Session, **kwargs):
             Article(**kwargs)
         )
         Session.commit()
-    except Exception:
-        pass
+    except exc.SQLAlchemyError:
+        Session.rollback()
