@@ -67,14 +67,22 @@ class RedditBot:
         subreddits_list = '+'.join(self._config['bot']['subreddits'])
         subreddits = self._reddit.subreddit(subreddits_list)
 
-        for submission in subreddits.stream.submissions():
-            logging.info('Found new submission: {}'.format(submission.id))
-            if self._plugin_manager.url_matches_plugin(submission.url):
-                logging.info('Submission url matches, saving to database: {}'
-                             .format(submission.id))
-                add_submission(self._database,
-                               base36_id=submission.id,
-                               url=submission.url)
+        while True:
+            try:
+                for submission in subreddits.stream.submissions():
+                    logging.info('Found new submission: {}'
+                                 .format(submission.id))
+                    if self._plugin_manager.url_matches_plugin(submission.url):
+                        logging.info('Submission url matches, '
+                                     'saving to database: {}'
+                                     .format(submission.id))
+                        add_submission(self._database,
+                                       base36_id=submission.id,
+                                       url=submission.url)
+            except APIException as e:
+                logging.error('Tried to read submissions stream but failed,'
+                              ' trying again!')
+                logging.error(e)
 
     def fetch_articles(self):
 
