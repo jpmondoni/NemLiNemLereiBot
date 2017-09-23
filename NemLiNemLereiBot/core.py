@@ -121,9 +121,6 @@ class RedditBot:
 
         logging.info('Looking for new submissions to reply to.')
 
-        # Busca em loop infinito com intervalo de 5 segundos cada query
-        # renderiza com o jinja2 e responde a submission.
-
         while True:
             submissions = get_submissions(self._database,
                                           status='TO_REPLY')
