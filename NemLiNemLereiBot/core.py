@@ -101,21 +101,21 @@ class RedditBot:
                                  'base36_id: {} with plugin: {}.'
                                  .format(submission.base36_id,
                                          plugin_name))
-                    try:
-                        archiveis_url = archive_page(submission.url)
-                    except Exception as e:
-                        archiveis_url = None
-                        logging.error('Tried to capture the page but failed!')
-                        logging.error(e)
                     metadata = plugin.extract_metadata(submission.url)
                     content = metadata['content']
                     summary = self._summarize(content)
                     decrease = percentage_decrease(content, summary)
                     metadata['summary'] = summary
                     metadata['percentage_decrease'] = decrease
-                    if archiveis_url:
-                        metadata['archiveis_url'] = archiveis_url
                     metadata.pop('content')
+
+                    try:
+                        archiveis_url = archive_page(submission.url)
+                        metadata['archiveis_url'] = archiveis_url
+                    except Exception as e:
+                        logging.error('Tried to capture the page but failed!')
+                        logging.error(e)
+
                     add_article(self._database,
                                 submission_id=submission.id,
                                 **metadata)
