@@ -28,9 +28,9 @@ class RedditBot:
         elif mode == 'fetch':
             self._setup_summarizer()
 
-    def _load_config(self, config_file='config.yml'):
+    def _load_config(self):
         logging.info('Loading config file.')
-        with open(config_file, 'r') as file:
+        with open('config.yml', 'r') as file:
             config = yaml.load(file)
         return config
 
