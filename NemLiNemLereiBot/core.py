@@ -6,8 +6,6 @@ from .pluginmanager import PluginManager
 from .database import Database
 from .helpers import render_template, percentage_decrease, archive_page
 from .summarizer import Summarizer
-from .database.helpers import (add_submission, get_submissions,
-                               add_article, get_article)
 
 
 logging.basicConfig(level=logging.INFO,
@@ -50,7 +48,8 @@ class RedditBot:
         database = Database(**self._config['database'])
         database.connect()
         database.create_tables()
-        self._database = database.session
+        database.make_session()
+        self._db = database
         logging.info('Database is now set up.')
 
     def _setup_summarizer(self):
@@ -71,12 +70,11 @@ class RedditBot:
                     logging.info('Found new submission: {}'
                                  .format(submission.id))
                     if self._plugin_manager.url_matches_plugin(submission.url):
-                        logging.info('Submission url matches, '
-                                     'saving to database: {}'
+                        logging.info('Adding submission: {} '
+                                     'to database if not already added.'
                                      .format(submission.id))
-                        add_submission(self._database,
-                                       base36_id=submission.id,
-                                       url=submission.url)
+                        self._db.add_submission(base36_id=submission.id,
+                                                url=submission.url)
             except Exception as e:
                 logging.error('Tried to read submissions stream but failed,'
                               ' trying again!')
@@ -88,8 +86,7 @@ class RedditBot:
         logging.info('Looking for pending articles to fetch data from.')
 
         while True:
-            submissions = get_submissions(self._database,
-                                          status='TO_FETCH')
+            submissions = self._db.get_submissions(status='TO_FETCH')
             for submission in submissions:
                 try:
                     plugin_name = (self._plugin_manager
@@ -116,19 +113,18 @@ class RedditBot:
                         logging.error('Tried to capture the page but failed!')
                         logging.error(e)
 
-                    add_article(self._database,
-                                submission_id=submission.id,
-                                **metadata)
+                    self._db.add_article(submission_id=submission.id,
+                                         **metadata)
 
                     logging.info('Saving article metadata to database.')
 
                     submission.status = 'TO_REPLY'
-                    self._database.commit()
+                    self._db.commit()
                 except Exception as e:
                     logging.error(e)
                     submission.status = 'FETCH_ERROR'
-                    self._database.commit()
-            self._database.commit()
+                    self._db.commit()
+            self._db.commit()
             time.sleep(5)
 
     def reply_submissions(self):
@@ -136,18 +132,16 @@ class RedditBot:
         logging.info('Looking for new submissions to reply to.')
 
         while True:
-            submissions = get_submissions(self._database,
-                                          status='TO_REPLY')
+            submissions = self._db.get_submissions(status='TO_REPLY')
             for submission in submissions:
-                article = get_article(self._database,
-                                      submission_id=submission.id)
+                article = self._db.get_article(submission_id=submission.id)
                 try:
                     reply = render_template('summary.md',
                                             article=article)
                     to_reply = self._reddit.submission(id=submission.base36_id)
                     to_reply.reply(reply)
                     submission.status = 'DONE'
-                    self._database.commit()
+                    self._db.commit()
                     logging.info('Replied to submission: {}'
                                  .format(submission.base36_id))
                 except Exception as e:
@@ -155,6 +149,6 @@ class RedditBot:
                                   .format(submission.base36_id))
                     logging.error(e)
                     submission.status = 'REPLY_ERROR'
-                    self._database.commit()
-            self._database.commit()
+                    self._db.commit()
+            self._db.commit()
             time.sleep(5)

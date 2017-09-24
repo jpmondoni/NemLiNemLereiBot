@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .models import Base
+from .models import Base, Submission, Article
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from ..core import logging
 
 
 class Database:
@@ -13,7 +15,8 @@ class Database:
         self.database = database
 
     def connect(self):
-        url = '{driver}://{username}:{password}@{host}:{port}/{database}?charset=utf8'
+        url = ('{driver}://{username}:{password}@'
+               '{host}:{port}/{database}?charset=utf8')
         engine = create_engine(url.format(**self.__dict__),
                                encoding='utf-8')
         self.engine = engine
@@ -21,7 +24,36 @@ class Database:
     def create_tables(self):
         Base.metadata.create_all(self.engine)
 
-    @property
-    def session(self):
+    def make_session(self):
         Session = sessionmaker(bind=self.engine)
-        return Session()
+        self.session = Session()
+
+    def commit(self):
+        self.session.commit()
+
+    def add_submission(self, **kwargs):
+        try:
+            self.session.add(
+                Submission(**kwargs)
+            )
+            self.session.commit()
+        except SQLAlchemyError:
+            self.session.rollback()
+
+    def add_article(self, **kwargs):
+        try:
+            self.session.add(
+                Article(**kwargs)
+            )
+            self.session.commit()
+        except SQLAlchemyError:
+            self.session.rollback()
+
+    def get_submissions(self, **kwargs):
+        submissions = self.session.query(Submission).filter_by(**kwargs).all()
+        return submissions
+
+    def get_article(self, **kwargs):
+        article = self.session.query(Article).filter_by(**kwargs).first()
+        return article
+
