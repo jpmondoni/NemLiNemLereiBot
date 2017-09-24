@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .models import Base, Submission, Article
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from ..core import logging
+import logging
 
 
 class Database:
@@ -14,16 +14,16 @@ class Database:
         self.port = port
         self.database = database
 
+        self.connect()
+        self.create_tables()
+        self.make_session()
+
     def connect(self):
         url = ('{driver}://{username}:{password}@'
                '{host}:{port}/{database}?charset=utf8')
         engine = create_engine(url.format(**self.__dict__),
                                encoding='utf-8')
         self.engine = engine
-
-        self.connect()
-        self.create_tables()
-        self.make_session()
 
     def create_tables(self):
         Base.metadata.create_all(self.engine)
