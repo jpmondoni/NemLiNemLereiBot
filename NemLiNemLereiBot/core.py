@@ -15,8 +15,9 @@ class RedditBot:
         logging.basicConfig(level=logging.INFO,
                             format="%(asctime)s [%(levelname)s] %(message)s")
 
-        logging.info('The Bot is now starting in {} mode.'.format(mode))
-        self._config = self._load_config()
+        logging.info('The Bot is now starting in {} mode.'
+                     .format(mode.upper()))
+        self._load_config()
 
         # Carrega os módulos básicos
         self._setup_database()
@@ -29,19 +30,29 @@ class RedditBot:
             self._setup_summarizer()
 
     def _load_config(self):
-        logging.info('Loading config file.')
-        with open('config.yml', 'r') as file:
-            config = yaml.load(file)
-        return config
+        try:
+            with open('config.yml', 'r') as file:
+                self._config = yaml.load(file)
+            logging.info('Loaded config file.')
+        except Exception as e:
+            logging.critical('Couldn\'t load config file.')
+            logging.critical(e)
+            raise e
 
     def _setup_plugins(self):
         logging.info('Loading plugins.')
         self._plugin_manager = PluginManager()
 
     def _setup_reddit(self):
-        logging.info('Connecting to Reddit.')
-        self._reddit = Reddit(**self._config['reddit'])
-        logging.info('Connected to Reddit!')
+        try:
+            self._reddit = Reddit(**self._config['reddit'])
+            username = self._reddit.user.me()
+            logging.info('Connected to Reddit as: {}.'
+                         .format(username))
+        except Exception as e:
+            logging.critical('Couldn\'t connect to Reddit.')
+            logging.critical(e)
+            raise e
 
     def _setup_database(self):
         logging.info('Setting up database.')
