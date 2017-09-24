@@ -8,14 +8,14 @@ from .helpers import render_template, percentage_decrease, archive_page
 from .summarizer import Summarizer
 
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s [%(levelname)s] %(message)s")
-
-
 class RedditBot:
 
     def __init__(self, mode='watch'):
-        logging.info('The Bot is now starting.'.format(mode))
+
+        logging.basicConfig(level=logging.INFO,
+                            format="%(asctime)s [%(levelname)s] %(message)s")
+
+        logging.info('The Bot is now starting in {} mode.'.format(mode))
         self._config = self._load_config()
 
         # Carrega os módulos básicos
