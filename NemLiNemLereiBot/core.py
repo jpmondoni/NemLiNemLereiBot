@@ -2,8 +2,6 @@ import yaml
 import time
 import logging
 from praw import Reddit
-from praw.exceptions import APIException
-from jinja2 import TemplateError
 from .pluginmanager import PluginManager
 from .database import Database
 from .helpers import render_template, percentage_decrease, archive_page
@@ -79,7 +77,7 @@ class RedditBot:
                         add_submission(self._database,
                                        base36_id=submission.id,
                                        url=submission.url)
-            except APIException as e:
+            except Exception as e:
                 logging.error('Tried to read submissions stream but failed,'
                               ' trying again!')
                 logging.error(e)
@@ -152,7 +150,7 @@ class RedditBot:
                     self._database.commit()
                     logging.info('Replied to submission: {}'
                                  .format(submission.base36_id))
-                except (TemplateError, APIException) as e:
+                except Exception as e:
                     logging.error('Tried to reply to submission {} but failed!'
                                   .format(submission.base36_id))
                     logging.error(e)
