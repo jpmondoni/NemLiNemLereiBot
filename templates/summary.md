@@ -1,7 +1,7 @@
 {% if article.percentage_decrease %}
-^(Este é o melhor NL;NL que eu pude fazer, o artigo original foi reduzido em {{'%0.2f' % article.percentage_decrease|float}}%. [Eu sou um Bot 🤖])  
+^(Este é o melhor NL;NL que eu pude fazer, o artigo original foi reduzido em {{'%0.2f' % article.percentage_decrease|float}}%. [Eu sou um Bot] 🤖)  
 {% else %}
-^(Este é o melhor NL;NL que eu pude fazer: [Eu sou um Bot 🤖])  
+^(Este é o melhor NL;NL que eu pude fazer: [Eu sou um Bot] 🤖)  
 {% endif %}
 
 {% if article.subtitle %}
