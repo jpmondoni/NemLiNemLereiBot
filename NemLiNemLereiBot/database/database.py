@@ -21,6 +21,10 @@ class Database:
                                encoding='utf-8')
         self.engine = engine
 
+        self.connect()
+        self.create_tables()
+        self.make_session()
+
     def create_tables(self):
         Base.metadata.create_all(self.engine)
 

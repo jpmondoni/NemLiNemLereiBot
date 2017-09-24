@@ -46,9 +46,6 @@ class RedditBot:
     def _setup_database(self):
         logging.info('Setting up database.')
         database = Database(**self._config['database'])
-        database.connect()
-        database.create_tables()
-        database.make_session()
         self._db = database
         logging.info('Database is now set up.')
 
