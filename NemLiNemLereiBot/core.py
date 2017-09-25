@@ -133,12 +133,12 @@ class RedditBot:
                     logging.info('Saving article metadata to database.')
 
                     submission.status = 'TO_REPLY'
-                    self._db.commit()
+                    self._db.session.commit()
                 except Exception as e:
                     logging.error(e)
                     submission.status = 'FETCH_ERROR'
-                    self._db.commit()
-            self._db.commit()
+                    self._db.session.commit()
+            self._db.session.commit()
             time.sleep(5)
 
     def reply_submissions(self):
@@ -155,7 +155,7 @@ class RedditBot:
                     to_reply = self._reddit.submission(id=submission.base36_id)
                     to_reply.reply(reply)
                     submission.status = 'DONE'
-                    self._db.commit()
+                    self._db.session.commit()
                     logging.info('Replied to submission: {}'
                                  .format(submission.base36_id))
                 except Exception as e:
@@ -163,6 +163,6 @@ class RedditBot:
                                   .format(submission.base36_id))
                     logging.error(e)
                     submission.status = 'REPLY_ERROR'
-                    self._db.commit()
-            self._db.commit()
+                    self._db.session.commit()
+            self._db.session.commit()
             time.sleep(5)

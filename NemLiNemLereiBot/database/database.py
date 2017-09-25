@@ -32,9 +32,6 @@ class Database:
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
-    def commit(self):
-        self.session.commit()
-
     def add_submission(self, **kwargs):
         try:
             self.session.add(
