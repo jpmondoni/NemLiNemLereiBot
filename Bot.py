@@ -9,16 +9,16 @@ def cli():
 @cli.command(short_help='Watch for new submissions')
 def watch():
     Bot = RedditBot(mode='watch')
-    Bot.watch_subreddits()
+    Bot.watch()
 @cli.command(short_help='Fetch & summarize articles')
 def fetch():
     Bot = RedditBot(mode='fetch')
-    Bot.fetch_articles()
+    Bot.fetch()
 
 @cli.command(short_help='Render template & reply')
 def reply():
     Bot = RedditBot(mode='reply')
-    Bot.reply_submissions()
+    Bot.reply()
 
 if __name__ == '__main__':
     cli()

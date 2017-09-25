@@ -71,7 +71,7 @@ class RedditBot:
         self._summarize = Summarizer(**self._config['summarizer']).summarize
         logging.info('Summarizer loaded.')
 
-    def watch_subreddits(self):
+    def watch(self):
 
         logging.info('Watching for new submissions.')
 
@@ -95,7 +95,7 @@ class RedditBot:
                 logging.error(e)
             time.sleep(5)
 
-    def fetch_articles(self):
+    def fetch(self):
 
         logging.info('Looking for pending articles to fetch data from.')
 
@@ -141,7 +141,7 @@ class RedditBot:
             self._db.session.commit()
             time.sleep(5)
 
-    def reply_submissions(self):
+    def reply(self):
 
         logging.info('Looking for new submissions to reply to.')
 
