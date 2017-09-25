@@ -37,7 +37,7 @@ class RedditBot:
         except Exception as e:
             logging.critical('Couldn\'t load config file.')
             logging.critical(e)
-            raise e
+            raise
 
     def _setup_plugins(self):
         logging.info('Loading plugins.')
@@ -52,13 +52,19 @@ class RedditBot:
         except Exception as e:
             logging.critical('Couldn\'t connect to Reddit.')
             logging.critical(e)
-            raise e
+            raise
 
     def _setup_database(self):
-        logging.info('Setting up database.')
-        database = Database(**self._config['database'])
-        self._db = database
-        logging.info('Database is now set up.')
+        try:
+            database = Database(**self._config['database'])
+            self._db = database
+            logging.info('Connected to database: '
+                         '{driver}://{username}@{host}:{port}/{database}'
+                         .format_map(self._config['database']))
+        except Exception as e:
+            logging.critical('Couldn\'t connect to database.')
+            logging.critical(e)
+            raise
 
     def _setup_summarizer(self):
         logging.info('Loading summarizer.')
