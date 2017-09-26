@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .models import Base, Submission, Article
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-import logging
 
 
 class Database:
