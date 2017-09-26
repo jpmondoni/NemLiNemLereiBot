@@ -12,6 +12,8 @@ class Submission(Base):
     status = Column(String(255), default='TO_FETCH')
     added_date = Column(DateTime, default=datetime.utcnow)
 
+    mysql_charset = 'utf8'
+
     def __repr__(self):
         return "<Submission('%s', '%s', '%s'>" % (self.id,
                                                   self.base36_id,
