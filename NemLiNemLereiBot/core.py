@@ -1,3 +1,4 @@
+import os
 import yaml
 import time
 import logging
@@ -11,13 +12,12 @@ from .summarizer import Summarizer
 class RedditBot:
 
     def __init__(self, mode='watch'):
+
         self.mode = mode
         self._setup_logging()
-
         self._logger.info('The Bot is now starting in {} mode.'
                           .format(mode.upper()))
         self._load_config()
-
         # Carrega os módulos básicos
         self._setup_database()
         self._setup_plugins()
@@ -29,17 +29,21 @@ class RedditBot:
             self._setup_summarizer()
 
     def _setup_logging(self):
-        fmt = "%(asctime)s [%(levelname)s] %(message)s"
-        logging.basicConfig(level=logging.INFO,
-                            format=fmt)
-        logger = logging.getLogger('NemLiNemLereiBot')
-        logs_folder = self._config['bot']['folders']['logs']
-        log_file = logging.FileHandler('{}/{}.log'
-                                       .format(logs_folder, self.mode))
-        log_file.setFormatter(
-            logging.Formatter(fmt)
-        )
-        logger.addHandler(log_file)
+        if not os.path.exists('logs'):
+            os.makedirs('logs')
+
+        logger = logging.getLogger(__name__)
+        formatter = logging.Formatter('%(asctime)s '
+                                      '[%(levelname)s] '
+                                      '%(message)s')
+        logger.setLevel(logging.INFO)
+        ch = logging.StreamHandler()
+        fh = logging.FileHandler('{}/{}.log'
+                                 .format('logs', self.mode))
+        ch.setFormatter(formatter)
+        fh.setFormatter(formatter)
+        logger.addHandler(ch)
+        logger.addHandler(fh)
         self._logger = logger
 
     def _load_config(self):
@@ -53,6 +57,9 @@ class RedditBot:
             raise
 
     def _setup_plugins(self):
+        if not os.path.exists('plugins'):
+            os.makedirs('plugins')
+
         self._logger.info('Loading plugins.')
         self._plugin_manager = PluginManager()
 
