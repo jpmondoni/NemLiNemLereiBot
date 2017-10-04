@@ -1,4 +1,5 @@
 plugins/
+logs/
 __pycache__/
 venv/
 .vscode/
