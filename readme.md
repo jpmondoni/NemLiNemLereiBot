@@ -4,9 +4,9 @@ NemLiNemLereiBot é um Reddit Bot inspirado no /u/autotldr que resume as notíci
 
 ## TODO
 
-- [ ] Refatorar e organizar o código (Em andamento).
-- [ ] Tratar Exceptions (Em andamento).
-- [ ] Contar em porcentagem a redução do artigo em relação ao resumo.
+- [x] Refatorar e organizar o código (Em andamento).
+- [x] Tratar Exceptions (Em andamento).
+- [x] Contar em porcentagem a redução do artigo em relação ao resumo.
 - [ ] Apagar automaticamente comentários com karma negativo.
 - [ ] Adicionar opção "opt out' para que o usuário possa impedir o bot de comentar suas publicações.
 
@@ -49,9 +49,17 @@ Reply - Responde os posts (submissões) com o resumo.
 ./Bot.py reply
 ```
 
-## Extensões
+O bot criará uma pasta vazia chamada 'plugins', sem os plugins ele não trabalha pois necessita saber como processar cada página, os plugins usados no bot estão disponíveis [neste repositório](https://github.com/CaioWzy/NemLiNemLereiBot-plugins)
 
-As extensões ajudam o bot a interpretar as páginas sem a necessidade de modificar o código principal do projeto. É *extremamante recomentável* utilizar a biblioteca [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) para extrair os dados dos artigos. Segue o exemplo mais básico de um plugin.
+Você pode clonar o repositório dentro da pasta plugins:
+```sh
+git clone https://github.com/CaioWzy/NemLiNemLereiBot-plugins.git .
+```
+
+## Plugins
+
+Os plugins ajudam o bot a interpretar as páginas sem a necessidade de modificar o código principal do projeto. É *extremamante recomentável* utilizar a biblioteca [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) para extrair os dados dos artigos. Segue o exemplo mais básico de um plugin.
+As extensões usadas no bot estão disponíveis [aqui](https://github.com/CaioWzy/NemLiNemLereiBot-plugins), fique livre para contribuir =)
 ```Python
 """ Crie uma classe chamada Plugin """
 class Plugin():
@@ -67,18 +75,18 @@ class Plugin():
         PluginManager.register_plugin(
             'g1_globo_com', r"^https?://g1.globo.com((?!/google/amp/))(.*)/noticia/(.*).ghtml$")
     
-    """ get_article_metadata é um outro método obrigatório, este deverá retornar um
+    """ extract_metadata é um outro método obrigatório, este deverá retornar um
     dicionário contendo as chaves 'subtitle', 'date_published' e 'content'.
     Subtitle deverá conter o subtítulo da notícia, se houver.
     Date_published deverá conter a data de publicação da notícia (em objeto datetime), 
     se houver.
     Content deverá conter o conteúdo da notícia, por razões óbvias este é o único 
     dado obrigatório."""
-    def get_article_metadata(self, url):
+    def extract_metadata(self, url):
         ...
-        return {'subtitle': self.get_title(),
-                'date_published': self.get_date(),
-                'content': self.get_content()}
+        return {'subtitle': self._get_subtitle(),
+                'date_published': self._get_published_date(),
+                'content': self._get_content()}
 ```
 ## Contribuições
-Sua ajuda será sempre bem-vinda, qualquer coisa só commitar ;)
+Sua ajuda será sempre bem-vinda, qualquer coisa só mandar um pull request ;)
