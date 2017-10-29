@@ -16,7 +16,7 @@
 
 ***
 {% if article.date_published %}
-^[desenvolvedor](https://www.reddit.com/u/CaioWzy) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot) ^| ^(notícia publicada em {{ article.date_published.strftime('%d/%m/%Y') }})  
+^[colaboradores](https://github.com/CaioWzy/NemLiNemLereiBot/blob/master/AUTHORS.md) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot) ^| ^(notícia publicada em {{ article.date_published.strftime('%d/%m/%Y') }})  
 {% else %}
-^[desenvolvedor](https://www.reddit.com/u/CaioWzy) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot)  
+^[colaboradores](https://github.com/CaioWzy/NemLiNemLereiBot/blob/master/AUTHORS.md) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot)  
 {% endif %}
