@@ -13,7 +13,7 @@
 {% if article.archiveis_url %}
 ^(O site está offline ou cai no paywall?) [^(Leia aqui.)]({{ article.archiveis_url }})  
 {% endif %}
-
+^(Problemas com paywall? Instale o Burlesco, que é uma extensão burla o paywall de mais de 20 sites!) [^(Mais informações no site do burlesco.)](https://burles.co)  
 ***
 {% if article.date_published %}
 ^[colaboradores](https://github.com/CaioWzy/NemLiNemLereiBot/blob/master/AUTHORS.md) ^| ^[código-fonte](https://github.com/CaioWzy/NemLiNemLereiBot) ^| ^(notícia publicada em {{ article.date_published.strftime('%d/%m/%Y') }})  
